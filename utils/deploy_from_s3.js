@@ -93,7 +93,7 @@ deployFromS3Task.getHandler = function(grunt) {
               Bucket: bucketName
             }, (err, data) => {
               if (err) {
-                grunt.log.error(`Unable to extract AWS info for bucket: ${bucketName}`);
+                grunt.fail.warn(`Unable to extract AWS info for bucket: ${bucketName}`);
                 return reject(err);
               }
 
@@ -101,6 +101,25 @@ deployFromS3Task.getHandler = function(grunt) {
               grunt.log.debug(message);
               return resolve(data);
             });
+          });
+        };
+
+        var getLambdaFunction = (deploy_function) => { return new Promise((resolve, reject) => {
+            lambda.getFunction({
+                FunctionName: deploy_function
+            }, (err, data) => {
+              if (err) {
+                  if (err.statusCode === 404) {
+                      grunt.fail.warn('Unable to find lambda function ' + deploy_function + ', verify the lambda function name and AWS region are correct.');
+                  } else {
+                      grunt.log.error('AWS API request failed with ' + err.statusCode + ' - ' + err);
+                      grunt.fail.warn('Check your AWS credentials, region and permissions are correct.');
+                  }
+                  return reject(err);
+              }
+
+                  return resolve(data);
+              });
           });
         };
 
@@ -137,7 +156,11 @@ deployFromS3Task.getHandler = function(grunt) {
                 return done(false);
             }
 
-            grunt.log.writeln(`Package found in S3.\nPerforming function code update...`);
+            grunt.log.writeln(`Package found in S3.\nVerifying existence of AWS Lambda function ${functionArn}...`);
+
+            return getLambdaFunction(functionArn);
+        }).then((res) => {
+            if (res) grunt.log.writeln(`Function found in AWS Lambda.\nPerforming function code update...`);
 
             return updateFunctionCode();
         }).then((res) => {
