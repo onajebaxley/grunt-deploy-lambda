@@ -1,0 +1,33 @@
+{
+  "name": "@onaje/grunt-deploy-lambda",
+  "version": "1.0.0",
+  "description": "A Grunt utlitiy for deploying an AWS Lambda fucntion package stored in S3",
+  "main": "index.js",
+  "scripts": {
+    "test": "cd test && grunt test_deploy"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/onajebaxley/grunt-deploy-lambda.git"
+  },
+  "keywords": [
+    "grunt",
+    "deploy",
+    "aws",
+    "lambda",
+    "s3"
+  ],
+  "author": "Onaje K.S. Baxley <onaje.baxley@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/onajebaxley/grunt-deploy-lambda/issues"
+  },
+  "homepage": "https://github.com/onajebaxley/grunt-deploy-lambda#readme",
+  "dependencies": {
+    "aws-sdk": "^2.238.1",
+    "bluebird": "^3.5.1"
+  },
+  "devDependencies": {
+    "grunt": "^1.0.2"
+  }
+}
