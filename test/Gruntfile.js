@@ -21,6 +21,13 @@ module.exports = function(grunt) {
                 packagePath: 'cf-tutorial_0-0-1_2018-4-11-12-53-4.zip',
                 bucket: 'my-default-s3-bucket',
                 functionArn: 'arn:aws:lambda:us-east-1:5555555:function:myDefaultLambda',
+                lambdaConfigOptions: {
+                    memory: 128,
+                    runtime: 'nodejs',
+                    timeout: 3,
+                    handler: 'index.handler',
+                    role: 'myExecutionRole'
+                },
                 options: {
                     awsProfile: 'default'
                 }
@@ -29,6 +36,11 @@ module.exports = function(grunt) {
                 packagePath: 'some/path/to/overriding_package.zip',
                 bucket: 'takes-presedence-over-default-bucket',
                 //functionArn: 'commented out--will fall back to default.functionArn',
+                lambdaConfigOptions: {
+                    //memory: 256, commented out -- will NOT fall back to default.lambdaConfigOptions.memory
+                    runtime: 'nodejs4.3',
+                    timeout: 15,
+                },
                 options: {
                     awsProfile: 'sandbox'
                 }

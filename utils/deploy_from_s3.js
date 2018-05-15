@@ -25,8 +25,10 @@ deployFromS3Task.getHandler = function(grunt) {
         let bucketName = grunt.config.get(`deploy_lambda_from_s3.${target}.bucket`);
         let packagePath = grunt.config.get(`deploy_lambda_from_s3.${target}.packagePath`);
         let functionArn = grunt.config.get(`deploy_lambda_from_s3.${target}.functionArn`);
+        let lambdaConfigOptions = grunt.config.get(`deploy_lambda_from_s3.${target}.lambdaConfigOptions`);
         let awsProfile = process.env.AWS_PROFILE;
         let credentials = {};
+        let lambdaConfigParams = {};
 
         // Resolve the desired AWS profile in this order: env variables, CLI options, task config, and finally the "default" ~/.aws/credentials profile
         if (!awsProfile || awsProfile.length <= 0) {
@@ -80,9 +82,32 @@ deployFromS3Task.getHandler = function(grunt) {
             grunt.log.writeln(`Setting default functionArn: ${functionArn}`);
         }
 
+        if (lambdaConfigOptions) {
+            if (lambdaConfigOptions.timeout) {
+                lambdaConfigParams.Timeout = lambdaConfigOptions.timeout;
+            }
+            if (lambdaConfigOptions.memory) {
+                lambdaConfigParams.MemorySize = lambdaConfigOptions.memory;
+            }
+            if (lambdaConfigOptions.handler) {
+                lambdaConfigParams.Handler = lambdaConfigOptions.handler;
+            }
+            if (lambdaConfigOptions.role) {
+                lambdaConfigParams.Role = lambdaConfigOptions.role;
+            }
+            if (lambdaConfigOptions.runtime) {
+                lambdaConfigParams.Runtime = lambdaConfigOptions.runtime;
+            }
+            if (lambdaConfigOptions.description) {
+                lambdaConfigParams.Description = lambdaConfigOptions.description;
+            }
+        }
+
         grunt.log.debug(`Using S3 bucket: ${bucketName}`);
         grunt.log.debug(`Using S3 packagePath: ${packagePath}`);
         grunt.log.debug(`Using Lambda function ARN: ${functionArn}`);
+        if (lambdaConfigOptions)
+            grunt.log.debug(`Using Lambda Configuration options: ${JSON.stringify(lambdaConfigParams)}`);
 
         const done = this.async();
         const s3 = new AWS.S3({ credentials: credentials });
@@ -142,6 +167,28 @@ deployFromS3Task.getHandler = function(grunt) {
           });
         };
 
+        var updateFunctionConfig = (deploy_function, config_params) => { return new Promise((resolve, reject) => {
+            if (Object.keys(config_params).length > 0) {
+                grunt.log.writeln(`Updating Lambda function configuration...`);
+                config_params.FunctionName = deploy_function;
+
+                lambda.updateFunctionConfiguration(config_params, function (err, data) {
+                    if (err) {
+                        grunt.log.error(err.message);
+                        grunt.fail.warn('Could not update config, please check that values and lambda:UpdateFunctionConfiguration perms are correct.');
+                        return reject(err);
+                    } else {
+                        grunt.log.writeln('Config updated.');
+                        return resolve(data);
+                    }
+                });
+            } else {
+                grunt.log.writeln('No config updates to make.');
+                return resolve();
+            }
+          });
+        };
+
         grunt.log.writeln(`Fetching S3 bucket objects for ${bucketName}...`);
 
         listBucketObjects().then((res) => {
@@ -167,6 +214,9 @@ deployFromS3Task.getHandler = function(grunt) {
             grunt.log.debug('API call updateFunctionCode resolved.');
 
             if (res) grunt.log.writeln('Package successfully deployed.');
+            return updateFunctionConfig(functionArn, lambdaConfigParams);
+        }).then((res) => {
+            
             return done();
         }).catch((err) => {
             grunt.fail.warn(`Unable to perform deploy_lambda_from_s3`);

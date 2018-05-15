@@ -21,6 +21,7 @@ To properly configure this task, one must specify at least a default configurati
  - packagePath: string of the path to the zipped package within S3
  - functionArn: string ARN (Amazon Resource Name) of the lambda function to be deployed
  - awsProfile (optional): string of the AWS Profile to use when performing deploy, matching some profile credential within your `~/.aws/credentials`
+ - lambdaConfigOptions (optional): object containing optional configuration parameters for the lambda function to be deployed. Unlike other configuration params, failing to specify these per configuration target will **NOT** result in defaults being used. In other words, these will **NOT** fall back to whatever `default.lambdaConfigOptions` you may have set. Your lambda's configuration will simply not be updated.
 
 awsProfile is an optional specificaiton per configuration; if not specified, it will default to the "default" profile credentials
 contianed in your local `~/.aws/credentials` file.
@@ -29,17 +30,29 @@ Below shows an example grunt configuration for two target configs: default (requ
 
     deploy_lambda_from_s3: {
         default: {
-            packagePath: 'lambda-function-code-0-1_2018.zip',
-            bucket: 'default-s3-bucket',
-            functionArn: 'arn:aws:lambda:us-east-1:55555555:function:myLambdaFunc',
+            packagePath: 'cf-tutorial_0-0-1_2018-4-11-12-53-4.zip',
+            bucket: 'my-default-s3-bucket',
+            functionArn: 'arn:aws:lambda:us-east-1:5555555:function:myDefaultLambda',
+            lambdaConfigOptions: {
+                memory: 128,
+                runtime: 'nodejs',
+                timeout: 3,
+                handler: 'index.handler',
+                role: 'myExecutionRole'
+            },
             options: {
-                awsProfile: 'myprofile'
+                awsProfile: 'default'
             }
         },
         alternate: {
             packagePath: 'some/path/to/overriding_package.zip',
             bucket: 'takes-presedence-over-default-bucket',
-            //functionArn: 'Commented out--will fall back to default.functionArn',
+            //functionArn: 'commented out--will fall back to default.functionArn',
+            lambdaConfigOptions: {
+                //memory: 256, commented out -- will NOT fall back to default.lambdaConfigOptions.memory
+                runtime: 'nodejs4.3',
+                timeout: 15,
+            },
             options: {
                 awsProfile: 'sandbox'
             }
