@@ -1,6 +1,6 @@
 {
   "name": "@onaje/grunt-deploy-lambda",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A Grunt utlitiy for deploying an AWS Lambda fucntion package stored in S3",
   "main": "index.js",
   "scripts": {
