@@ -1,6 +1,6 @@
 {
   "name": "grunt-deploy-lambda",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "A Grunt utlitiy for deploying an AWS Lambda fucntion package stored in S3",
   "main": "index.js",
   "scripts": {

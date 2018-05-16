@@ -8,23 +8,23 @@ Use of this package also requires a valid grunt configuration (which can be done
 You may access these tasks programmatically after loading package into your grunt via: ~~`grunt.loadNpmTasks('@onaje/grunt-deploy-lambda');`~~
 `grunt.loadNpmTasks('grunt-deploy-lambda');`
 
-## Task: deploy_lambda_from_s3:<targetConfig> [--aws-profile]
-Deploys the specified package from an S3 Bucket to AWS Lambda
+## Task: deploy_lambda_from_s3:[targetConfig] [--aws-profile]
+Deploys the specified function-code package from an S3 Bucket to your AWS Lambda function, and optionally updates certain Lambda configuration parameters.
 
 example CLI usage: `grunt deploy_lambda_from_s3:default --aws-profile=default`
 
 NOTE: The "--aws-profile" option overries any `options.awsProfile` specified in your target configuration.
 Similarly, setting the environment variable `AWS_PROFILE` will override any specified "--aws-profile" option as well as any target configuration.
 
-#### deploy_lambda_from_s3: Configuration 
-To properly configure this task, one must specify at least a `default` configuration for the following configuration parameters:
+### deploy_lambda_from_s3: Task Configuration 
+To properly configure this task, one must specify at least a `default` task configuration for the following configuration parameters:
  - bucket: string of the S3 bucket containing the desired package
- - packagePath: string of the path to the zipped package within S3
+ - packagePath: string of the path to the zipped package within S3 (ex: `"myS3Packages/lambdaFunctionPackage.zip"`)
  - functionArn: string ARN (Amazon Resource Name) of the lambda function to be deployed
- - awsProfile (optional): string of the AWS Profile to use when performing deploy, matching some profile credential within your `~/.aws/credentials`
+ - awsProfile (optional)*: string of the AWS Profile to use when performing deploy, matching some profile credential within your `~/.aws/credentials`
  - lambdaConfigOptions (optional): object containing optional configuration parameters for the lambda function to be deployed. Unlike other configuration params, failing to specify these per configuration target will **NOT** result in defaults being used. In other words, these will **NOT** fall back to whatever `default.lambdaConfigOptions` you may have set. Your lambda's configuration will simply not be updated.
 
-awsProfile is an optional specificaiton per configuration; if not specified, it will default to the "default" profile credentials
+*awsProfile is an optional specificaiton per configuration; if not specified, it will default to whatever "default" profile credentials
 contianed in your local `~/.aws/credentials` file.
 
 Below shows an example grunt configuration for two target configs: default (required) and alternate:
@@ -59,4 +59,10 @@ Below shows an example grunt configuration for two target configs: default (requ
             }
         }
     }
+
+## Task: update_lambda_environment (coming soon with v0.4.0!)
+Enables the ability to update your AWS Lambda functions' environment variables based on an external (and optionally programmatic) file.
+
+### update_lambda_environment: Task Configuration
+(coming soon)
 
