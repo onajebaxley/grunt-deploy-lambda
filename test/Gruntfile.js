@@ -9,11 +9,12 @@
  */
 
 const deployFromS3Task = require('../utils/deploy_from_s3');
+const updateLambdaEnvTask = require('../utils/update_lambda_env');
 
 module.exports = function(grunt) {
     grunt.initConfig({
         /**
-         * Configuration for @onaje/grunt-deploy-lambda, which is used to:
+         * Configuration for @onaje/grunt-deploy-lambda's deploy_lambda_from_s3 task, which is used to:
          *  - Upload/deploy newly packaged lambda function code from S3 bucket
          */
         deploy_lambda_from_s3: {
@@ -45,12 +46,37 @@ module.exports = function(grunt) {
                     awsProfile: 'sandbox'
                 }
             }
+        },
+
+        /**
+         * Configuration for grunt-deploy-lambda's update_lambda_environment task, which is used to:
+         *  - Upload/deploy programmatically-defined environment variables to your lambda function
+         */
+        update_lambda_environment: {
+            default: {
+                functionArn: 'arn:aws:lambda:us-east-1:5555555:function:myDefaultLambda',
+                envFilePath: '~/grunt-deploy-lambda/test/defaultEnv.js',
+                options: {
+                    awsProfile: 'default'
+                }
+            },
+            alternate: {
+                functionArn: 'arn:aws:lambda:us-east-1:5555555:function:anotherLambda',
+                //envFilePath: '../test/alternateEnv.js', commented out--will fall back to default.envFilePath
+                options: {
+                    awsProfile: 'sandbox'
+                }
+            }
         }
     });
 
     // Please see the Grunt docs for more info on task creation: https://gruntjs.com/creating-tasks
-    grunt.registerTask('test_deploy',
+    grunt.registerTask('test_deploy_lambda',
         'Tests uploading the specified package as AWS Lambda function code',
         deployFromS3Task.getHandler(grunt));
+
+    grunt.registerTask('test_update_lambda_env',
+        'Tests updating the specified AWS Lambda function\'s environment variables',
+        updateLambdaEnvTask.getHandler(grunt));
 };
 
