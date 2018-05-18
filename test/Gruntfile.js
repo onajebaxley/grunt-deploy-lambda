@@ -56,11 +56,13 @@ module.exports = function(grunt) {
             default: {
                 functionArn: 'arn:aws:lambda:us-east-1:5555555:function:myDefaultLambda',
                 envFilePath: '~/grunt-deploy-lambda/test/defaultEnv.js',
+                envVariablePrefix: 'defaultAppConfig_',
                 options: {
                     awsProfile: 'default'
                 }
             },
             alternate: {
+                // envVariablePrefix: 'myapp_', commented out--will NOT fall back to default.envVariablePrefix
                 functionArn: 'arn:aws:lambda:us-east-1:5555555:function:anotherLambda',
                 //envFilePath: '../test/alternateEnv.js', commented out--will fall back to default.envFilePath
                 options: {

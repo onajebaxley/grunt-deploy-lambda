@@ -40,9 +40,18 @@ function resolvePath(filepath) {
     }
 }
 
-function uploadEnvVariables(envVariablesObj, functionArn, lambdaApi, grunt, done) {
+function uploadEnvVariables(envVariablesObj, envVariablePrefix, functionArn, lambdaApi, grunt, done) {
     // flatten the object containing env variables to be one level deep, nested object-keys will be preceeded by "_"
-    let flattened = flatten(envVariablesObj, { delimiter: '_' });
+    let flattened = flatten(envVariablesObj, { delimiter: '__' });
+
+    if (envVariablePrefix) {
+        Object.keys(flattened).forEach((key, index) => {
+            let tmp = flattened[key];
+            flattened[key] = undefined;
+            flattened[envVariablePrefix + key] = tmp;
+        });
+    }
+
     let lambdaConfigParams = { Environment: { Variables: flattened } };
 
     var getLambdaFunction = (deploy_function) => { return new Promise((resolve, reject) => {
@@ -116,6 +125,7 @@ updateLambdaEnvTask.getHandler = function(grunt) {
 
         let functionArn = grunt.config.get(`update_lambda_environment.${target}.functionArn`);
         let envFilePath = grunt.config.get(`update_lambda_environment.${target}.envFilePath`);
+        let envVariablePrefix = grunt.config.get(`update_lambda_environment.${target}.envVariablePrefix`);
         let awsProfile = process.env.AWS_PROFILE;
         let credentials = {};
 
@@ -151,6 +161,11 @@ updateLambdaEnvTask.getHandler = function(grunt) {
             grunt.log.writeln(`Setting default functionArn: ${functionArn}`);
         }
 
+        if (typeof envVariablePrefix !== 'string' || envVariablePrefix.length <= 0) {
+            // The environment variable prefix option has not been defined; do nothing
+            envVariablePrefix = null;
+        }
+
         if (typeof envFilePath !== 'string' || envFilePath.length <= 0) {
             // Use the environemnt source file path set by the default task
             grunt.config.requires(`update_lambda_environment.default.envFilePath`);
@@ -165,6 +180,7 @@ updateLambdaEnvTask.getHandler = function(grunt) {
 
         grunt.log.debug(`Using Lambda function ARN: ${functionArn}`);
         grunt.log.debug(`Using environment source file: ${envFilePath}`);
+        grunt.log.debug(`Using environment variable(s) prefix: ${envVariablePrefix}`);
         
         const environmentSource = require(envFilePath);
         const done = this.async();
@@ -187,15 +203,15 @@ updateLambdaEnvTask.getHandler = function(grunt) {
                 assignDeep(envVariables, value);
 
                 if (index === length - 1) {
-                    grunt.log.writeln(`Resulting merged object: ${JSON.stringify(envVariables)}`);
-                    uploadEnvVariables(envVariables, functionArn, lambdaApi, grunt, done);
+                    grunt.log.writeln(`Resulting merged environment object: ${JSON.stringify(envVariables)}`);
+                    uploadEnvVariables(envVariables, envVariablePrefix, functionArn, lambdaApi, grunt, done);
                 }
             });
         } else {
             grunt.log.debug('Detected an object-type environment file');
             envVariables = environmentSource;
 
-            uploadEnvVariables(envVariables, functionArn, lambdaApi, grunt, done);
+            uploadEnvVariables(envVariables, envVariablePrefix, functionArn, lambdaApi, grunt, done);
         }
 
     };
