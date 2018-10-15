@@ -113,6 +113,7 @@ deployFromS3Task.getHandler = function(grunt) {
         const s3 = new AWS.S3({ credentials: credentials });
         const lambda = new AWS.Lambda({ credentials: credentials, region: functionArn.split(':')[3], apiVersion: '2015-03-31' });
 
+        // listBucketObjects no longer used: replaced with getBucketObject
         var listBucketObjects  = () => { return new Promise((resolve, reject) => {
             s3.listObjectsV2({
               Bucket: bucketName
@@ -123,6 +124,23 @@ deployFromS3Task.getHandler = function(grunt) {
               }
 
               let message = `Returned S3 bucket data: ${JSON.stringify(data)}`;
+              grunt.log.debug(message);
+              return resolve(data);
+            });
+          });
+        };
+
+        var getBucketObject  = () => { return new Promise((resolve, reject) => {
+            s3.getObject({
+              Bucket: bucketName,
+              Key: packagePath
+            }, (err, data) => {
+              if (err) {
+                grunt.fail.warn(`Unable to pull object ${packagePath} from bucket: ${bucketName}`);
+                return reject(err);
+              }
+
+              let message = `Returned S3 object length: ${data.ContentLength}`;
               grunt.log.debug(message);
               return resolve(data);
             });
@@ -191,11 +209,8 @@ deployFromS3Task.getHandler = function(grunt) {
 
         grunt.log.writeln(`Fetching S3 bucket objects for ${bucketName}...`);
 
-        listBucketObjects().then((res) => {
-            let packageExists = false;
-            res.Contents.forEach((bucketObject) => {
-                packageExists = packageExists || bucketObject.Key === packagePath;
-            });
+        getBucketObject().then((res) => {
+            let packageExists = res.ContentLength;
 
             if (!packageExists) {
                 let err = `Targeted package "${packagePath}" not found in S3 bucket "${bucketName}"`;
