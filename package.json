@@ -1,6 +1,6 @@
 {
   "name": "grunt-deploy-lambda",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "A Grunt utlitiy for deploying an AWS Lambda function package stored in S3",
   "main": "index.js",
   "scripts": {
@@ -25,13 +25,13 @@
   },
   "homepage": "https://github.com/onajebaxley/grunt-deploy-lambda#readme",
   "dependencies": {
-    "assign-deep": "^0.4.7",
-    "aws-sdk": "^2.238.1",
-    "bluebird": "^3.5.1",
-    "flat": "^4.0.0",
-    "grunt": "^1.0.2"
+    "assign-deep": "^1.0.1",
+    "aws-sdk": "^2.522.0",
+    "bluebird": "^3.5.5",
+    "flat": "^4.1.0",
+    "grunt": "^1.0.4"
   },
   "devDependencies": {
-    "grunt": "^1.0.2"
+    "grunt": "^1.0.4"
   }
 }
