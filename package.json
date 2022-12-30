@@ -28,7 +28,7 @@
     "assign-deep": "^1.0.1",
     "aws-sdk": "^2.522.0",
     "bluebird": "^3.5.5",
-    "flat": "^4.1.0",
+    "flat": "^5.0.1",
     "grunt": "^1.0.4"
   },
   "devDependencies": {
